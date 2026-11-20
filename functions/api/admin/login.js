@@ -12,5 +12,5 @@ export async function onRequestPost({request,env}){
   stage='session';const token=crypto.randomUUID()+crypto.randomUUID(),tokenHash=await sha(token);
   await env.DB.prepare('INSERT INTO sessions(token_hash,expires) VALUES(?,?)').bind(tokenHash,Date.now()+8*3600*1000).run();
   return new Response(JSON.stringify({ok:true}),{headers:{'Content-Type':'application/json','Set-Cookie':`admin_session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/api/admin; Max-Age=28800`,'Cache-Control':'no-store'}});
- }catch(e){console.error('ADMIN_LOGIN_ERROR',stage,e?.name,e?.message);return Response.json({error:'خطأ بالخادم أثناء تسجيل الدخول',code:'LOGIN_'+stage.toUpperCase()},{status:500,headers:{'Cache-Control':'no-store'}})}
+ }catch(e){console.error('ADMIN_LOGIN_ERROR',stage,e?.name,e?.message);return Response.json({error:'خطأ بالخادم أثناء تسجيل الدخول',code:'LOGIN_'+stage.toUpperCase(),reason:e?.name||'UNKNOWN'},{status:500,headers:{'Cache-Control':'no-store'}})}
 }
