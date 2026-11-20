@@ -1,7 +1,18 @@
-# Al Shuwaikhi — مطعم وجزارة الشويخي
+# Al Shuwaikhi — Cloudflare Pages + D1
 
-Cloudflare Pages project: https://alshuwaikhi.pages.dev
+موقع مطعم وجزارة الشويخي، منيو ديناميكي، طلبات واتساب، لوحة إدارة.
 
-This repository will hold the public site and Pages Functions. Database: alshuwaikhi-db (D1).
+## النشر
+1. أنشئ مشروع Pages باسم `alshuwaikhi` عبر Direct Upload أو GitHub؛ مجلد النشر `public`.
+2. أنشئ قاعدة D1 واربطها بالمشروع باسم binding: `DB` من Settings > Bindings (Production وPreview عند الحاجة).
+3. نفّذ `schema.sql` ثم `seed.sql` ثم `auth-setup.sql` في D1 Console بالترتيب. **نفّذ seed.sql مرة واحدة فقط** لتجنب تكرار الأصناف.
+4. في حالة Direct Upload يجب نشر مجلد `functions` عبر Git integration أو Wrangler Pages deploy مع وظائف Pages؛ رفع `public` وحده لن ينشر API. الطريقة المفضلة: مستودع GitHub بالمجلدين `public` و`functions`، ومجلد Build output = `public`، بدون build command.
+5. افتح `/admin.html`، اسم المستخدم `admin` وكلمة المرور الأولية `01151699180`، ثم غيّرها فورًا إلى كلمة مرور قوية. لا تترك كلمة المرور الأولية على موقع عام.
+6. تأكد من عمل `/api/menu` وإضافة صنف من لوحة الإدارة وظهوره للزوار قبل مشاركة الموقع.
 
-Deployment is not yet complete. Do not use the admin panel until authentication is configured and tested.
+## تنبيهات
+- رابط WhatsApp يفتح رسالة مجهزة؛ العميل يضغط إرسال داخل واتساب.
+- الأسعار من صور المنيو ويجب مراجعتها مع صاحب المطعم قبل النشر.
+- بيانات العميل لا تحفظ في قاعدة البيانات؛ تُرسل إلى واتساب عبر متصفح العميل.
+- صور المنتجات في النسخة الأولى هي صور المنيو والشعار، ولا يوجد رفع صور فردية من لوحة الإدارة.
+- رابط تصميم SAMURAI في الفوتر يوجه إلى واتساب +13606126472.
