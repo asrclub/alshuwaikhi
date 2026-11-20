@@ -1,1 +1,14 @@
-import {authorized,fail,derive} from './_auth.js';export async function onRequestPost({request,env}){if(!await authorized(request,env))return fail();let {oldPassword,newPassword}=await request.json();if(typeof newPassword!=='string'||newPassword.length<12||newPassword.length>200)return Response.json({error:'كلمة المرور الجديدة يجب أن تكون ١٢ حرفًا على الأقل'},{status:400});let a=await env.DB.prepare('SELECT * FROM auth WHERE id=1').first();if(await derive(oldPassword,a.salt)!==a.password_hash)return Response.json({error:'كلمة المرور الحالية غير صحيحة'},{status:400});let salt=crypto.randomUUID();await env.DB.prepare('UPDATE auth SET salt=?,password_hash=? WHERE id=1').bind(salt,await derive(newPassword,salt)).run();await env.DB.prepare('DELETE FROM sessions').run();return Response.json({ok:true})}
+import {authorized,fail,hashNewPassword} from './_auth.js';
+export async function onRequestPost({request,env}){
+ try{
+  if(!await authorized(request,env))return fail();
+  const {newPassword}=await request.json();
+  if(typeof newPassword!=='string'||newPassword.length<12||newPassword.length>200)return Response.json({error:'كلمة المرور الجديدة يجب أن تكون من ١٢ إلى ٢٠٠ حرف'},{status:400});
+  const salt=crypto.randomUUID();
+  const hash=await hashNewPassword(newPassword,salt);
+  const result=await env.DB.prepare('UPDATE auth SET salt=?,password_hash=? WHERE id=1').bind(salt,hash).run();
+  if(!result.meta?.changes)return Response.json({error:'لم يتم العثور على حساب المدير'},{status:503});
+  await env.DB.prepare('DELETE FROM sessions').run();
+  return Response.json({ok:true},{headers:{'Cache-Control':'no-store'}});
+ }catch(e){console.error('PASSWORD_CHANGE_FAILED',e?.name,e?.message);return Response.json({error:'تعذر تغيير كلمة المرور',code:'PASSWORD_CHANGE',reason:e?.name||'UNKNOWN'},{status:500})}
+}
