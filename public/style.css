@@ -139,3 +139,31 @@ html[data-theme="red"] .hero-overlay{
   html[data-theme="blue"] .hero-overlay,
   html[data-theme="red"] .hero-overlay{background:linear-gradient(270deg,var(--theme-hero-end) 0%,rgba(255,255,255,.93) 35%,rgba(255,255,255,.35) 72%,transparent 100%)}
 }
+
+/* Official AlShuwaikhi Android download — matches every existing website theme */
+.app-download{padding:48px 24px 28px;max-width:1248px;margin:0 auto;scroll-margin-top:94px}
+.app-download-card{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr);align-items:center;gap:35px;min-height:435px;padding:48px clamp(25px,5vw,74px);border-radius:26px;background:radial-gradient(circle at 73% 18%,color-mix(in srgb,var(--gold) 14%,transparent),transparent 47%),var(--panel);border:1px solid color-mix(in srgb,var(--gold) 37%,transparent);box-shadow:0 15px 55px rgba(0,0,0,.11)}
+.app-download-brand{position:relative;z-index:2;min-width:0}
+.app-download-logo{display:block;width:88px;height:88px;object-fit:cover;border-radius:50%;border:2px solid var(--gold);box-shadow:0 0 0 6px color-mix(in srgb,var(--gold) 12%,transparent);margin-bottom:21px}
+.app-download-kicker{display:block;font:700 13px Cairo,sans-serif;letter-spacing:.1px;color:var(--gold);margin-bottom:8px}
+.app-download h2{font:900 clamp(27px,3.4vw,44px)/1.5 Cairo,sans-serif;margin:0 0 9px;color:var(--cream)}
+.app-download-brand>p{max-width:600px;font:500 16px/1.95 Tajawal,Cairo,sans-serif;color:var(--muted);margin:0 0 12px}
+.app-download-highlights{display:flex;flex-wrap:wrap;gap:8px 16px;margin:20px 0 26px}
+.app-download-highlights span{font:700 13px/1.5 Cairo,sans-serif;color:var(--cream)}
+.app-download-button{display:inline-flex;align-items:center;justify-content:center;gap:12px;min-height:53px;max-width:100%;padding:12px 25px;border-radius:999px;background:var(--theme-button,var(--gold));color:var(--theme-button-text,#241a10);text-align:center;font:800 15px/1.6 Cairo,sans-serif;box-shadow:0 10px 25px color-mix(in srgb,var(--gold) 20%,transparent);transition:transform .2s ease,box-shadow .2s ease}
+.app-download-button span{font:900 23px/1 Arial,sans-serif}
+.app-download-button:hover,.app-download-button:focus-visible{transform:translateY(-3px);box-shadow:0 15px 29px color-mix(in srgb,var(--gold) 32%,transparent)}
+.app-download-button:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.app-download .app-download-meta{font-size:13px;line-height:1.6;color:var(--muted);margin:12px 0 5px}
+.app-download .app-download-help{font-size:12px;line-height:1.7;color:var(--muted);margin:0;max-width:550px}
+.app-download-art{position:relative;display:grid;place-items:center;min-height:365px}
+.app-download-halo{position:absolute;width:295px;height:295px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--gold) 20%,transparent),transparent 68%)}
+.app-download-phone{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:218px;height:360px;max-width:100%;border:8px solid #1c1b1a;border-radius:34px;background:linear-gradient(145deg,#24201b,#0e0d0c);box-shadow:0 20px 45px rgba(0,0,0,.33),inset 0 0 0 2px #504334;transform:rotate(-5deg);color:#f4ead6}
+.app-download-phone .app-download-notch{position:absolute;top:7px;left:50%;width:60px;height:10px;transform:translateX(-50%);background:#050505;border-radius:15px}
+.app-download-phone img{width:100px;height:100px;object-fit:cover;border-radius:50%;border:1px solid #d6ae68;margin-bottom:12px}
+.app-download-phone strong{font:900 27px/1.5 Cairo,sans-serif;color:#d6ae68}
+.app-download-phone span{font:700 14px Tajawal,sans-serif;color:#d7c8b0}
+.app-download-phone-line{height:1px;width:100px;margin-top:7px;background:#5c4a2f}
+.app-download-phone small{font:500 11px Tajawal,sans-serif;color:#bba88c}
+@media(max-width:760px){.app-download{padding:32px 15px 20px}.app-download-card{grid-template-columns:1fr;padding:32px 23px;min-height:auto;gap:18px;border-radius:19px}.app-download-logo{width:72px;height:72px;margin-bottom:15px}.app-download-art{min-height:215px}.app-download-halo{width:200px;height:200px}.app-download-phone{width:138px;height:220px;border-width:6px;border-radius:23px;gap:3px;transform:rotate(-4deg)}.app-download-phone .app-download-notch{top:4px;width:39px;height:7px}.app-download-phone img{width:61px;height:61px;margin:6px 0}.app-download-phone strong{font-size:19px}.app-download-phone span{font-size:11px}.app-download-phone small{font-size:9px}.app-download-phone-line{margin:3px}.app-download-button{width:100%;padding:12px 14px}.app-download-highlights{margin:15px 0 22px}.app-download h2{font-size:30px}}
+@media(prefers-reduced-motion:reduce){.app-download-button{transition:none}.app-download-phone{transform:none}}
