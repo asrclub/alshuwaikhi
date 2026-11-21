@@ -1,0 +1,55 @@
+name: Build AlShuwaikhi Android APK
+on:
+  push:
+    branches:
+      - build-android-app
+    paths:
+      - android-project.tar.xz.b64
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website for original branding
+        uses: actions/checkout@v4
+      - name: Configure Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Configure Android
+        uses: android-actions/setup-android@v3
+      - name: Configure Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Install Android API 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Prepare Android project and original icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/android-src"
+          base64 --decode android-project.tar.xz.b64 | tar -xJ -C "$RUNNER_TEMP/android-src"
+          APP="$RUNNER_TEMP/android-src/AlShuwaikhi-Android"
+          mkdir -p "$APP/app/src/main/res/drawable-nodpi"
+          cp public/assets/logo.png "$APP/app/src/main/res/drawable-nodpi/app_logo.png"
+          sed -i 's/R.drawable.app_icon/R.drawable.app_logo/g' "$APP/app/src/main/java/com/asrclub/alshuwaikhi/MainActivity.kt"
+          sed -i 's|@drawable/app_icon|@drawable/app_logo|g' "$APP/app/src/main/AndroidManifest.xml" "$APP/app/src/main/res/values-v31/styles.xml"
+          echo "$APP" > "$RUNNER_TEMP/shuwaikhi-project-path"
+      - name: Build debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$(cat "$RUNNER_TEMP/shuwaikhi-project-path")"
+          gradle --no-daemon --stacktrace assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/android-apk"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/android-apk/AlShuwaikhi.apk"
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: AlShuwaikhi-APK
+          path: android-apk/AlShuwaikhi.apk
+          if-no-files-found: error
