@@ -167,3 +167,32 @@ html[data-theme="red"] .hero-overlay{
 .app-download-phone small{font:500 11px Tajawal,sans-serif;color:#bba88c}
 @media(max-width:760px){.app-download{padding:32px 15px 20px}.app-download-card{grid-template-columns:1fr;padding:32px 23px;min-height:auto;gap:18px;border-radius:19px}.app-download-logo{width:72px;height:72px;margin-bottom:15px}.app-download-art{min-height:215px}.app-download-halo{width:200px;height:200px}.app-download-phone{width:138px;height:220px;border-width:6px;border-radius:23px;gap:3px;transform:rotate(-4deg)}.app-download-phone .app-download-notch{top:4px;width:39px;height:7px}.app-download-phone img{width:61px;height:61px;margin:6px 0}.app-download-phone strong{font-size:19px}.app-download-phone span{font-size:11px}.app-download-phone small{font-size:9px}.app-download-phone-line{margin:3px}.app-download-button{width:100%;padding:12px 14px}.app-download-highlights{margin:15px 0 22px}.app-download h2{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.app-download-button{transition:none}.app-download-phone{transform:none}}
+
+/* Share AlShuwaikhi website: WhatsApp, Facebook, Telegram and copy link */
+.share-inline{max-width:1200px;margin:27px auto 0;padding:22px clamp(16px,3vw,30px);display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap;border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);background:var(--panel);border-radius:18px}
+.share-inline-copy{display:flex;flex-direction:column;gap:5px;min-width:210px}
+.share-inline-copy strong{font:800 18px/1.5 Cairo,Tajawal,sans-serif;color:var(--cream)}
+.share-inline-copy small{font:500 13px/1.7 Tajawal,Cairo,sans-serif;color:var(--muted)}
+.share-actions{display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.share-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:43px;padding:9px 15px;border:1px solid color-mix(in srgb,var(--gold) 32%,transparent);border-radius:999px;background:color-mix(in srgb,var(--gold) 6%,var(--panel));color:var(--cream);text-decoration:none;font:800 13px/1.5 Cairo,Tajawal,sans-serif;cursor:pointer;white-space:nowrap;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.share-action:hover,.share-action:focus-visible{transform:translateY(-2px);border-color:var(--gold);background:color-mix(in srgb,var(--gold) 15%,var(--panel))}
+.share-action:focus-visible,.share-fab:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.share-symbol{display:inline-grid;place-items:center;font:900 20px/1 Arial,sans-serif;min-width:19px}
+.share-whatsapp .share-symbol{color:#24b961}
+.share-facebook .share-symbol{color:#1877f2}
+.share-telegram .share-symbol{color:#2aabee}
+.share-copy .share-symbol{color:var(--gold)}
+.share-floating{position:fixed;left:19px;bottom:20px;z-index:100;display:flex;flex-direction:column;align-items:flex-start;gap:10px;max-width:calc(100vw - 38px)}
+.share-fab{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:52px;padding:10px 17px;border:1px solid color-mix(in srgb,var(--gold) 70%,transparent);border-radius:100px;background:var(--theme-button,var(--gold));color:var(--theme-button-text,#261d0c);font:800 14px/1.4 Cairo,Tajawal,sans-serif;box-shadow:0 7px 26px rgba(0,0,0,.25);cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.share-fab:hover{transform:translateY(-2px);box-shadow:0 9px 29px rgba(0,0,0,.35)}
+.share-fab svg{flex:none}
+.share-popover{width:min(290px,calc(100vw - 38px));padding:17px;background:var(--panel);border:1px solid var(--gold);border-radius:19px;color:var(--cream);box-shadow:0 14px 45px rgba(0,0,0,.32)}
+.share-popover[hidden],.share-feedback[hidden]{display:none!important}
+.share-popover-title{display:block;margin:0 0 13px;font:800 15px/1.7 Cairo,Tajawal,sans-serif}
+.share-popover-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.share-popover-actions .share-action{padding:10px 7px;font-size:12px}
+.share-feedback{position:fixed;left:19px;bottom:85px;z-index:101;max-width:min(315px,calc(100vw - 40px));border:1px solid var(--gold);border-radius:12px;padding:10px 14px;box-shadow:0 9px 27px rgba(0,0,0,.3);background:var(--panel);color:var(--cream);font:700 13px/1.7 Cairo,Tajawal,sans-serif}
+body:has(.mobile-cart:not([hidden])) .share-floating{bottom:83px}
+body:has(.mobile-cart:not([hidden])) .share-feedback{bottom:146px}
+@media(max-width:800px){.share-inline{margin:20px 15px 0;padding:18px}.share-inline-copy{width:100%}.share-inline .share-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.share-inline .share-action{width:100%;min-width:0;padding:10px 5px;font-size:12px}.share-fab{min-height:48px;padding:9px 13px}.share-floating{left:14px;bottom:15px}.share-feedback{left:14px;bottom:79px}}
+@media(prefers-reduced-motion:reduce){.share-action,.share-fab{transition:none}.share-action:hover,.share-fab:hover{transform:none}}
