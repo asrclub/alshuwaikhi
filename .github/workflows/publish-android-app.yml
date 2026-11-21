@@ -1,0 +1,45 @@
+name: Publish official Android APK into website assets
+on:
+  push:
+    branches:
+      - feature/app-download-shuwaikhi
+    paths:
+      - .github/workflows/publish-android-app.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout proposed website update
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Retrieve verified release APK (never publish the signing key)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh run download 44880372282 --repo "$GITHUB_REPOSITORY" --name AlShuwaikhi-Signed-Release --dir "$RUNNER_TEMP/release"
+          test -s "$RUNNER_TEMP/release/AlShuwaikhi-Release-v1.0.0.apk"
+          mkdir -p public/apps
+          cp "$RUNNER_TEMP/release/AlShuwaikhi-Release-v1.0.0.apk" public/apps/
+          unzip -t public/apps/AlShuwaikhi-Release-v1.0.0.apk | tail -2
+          sha256sum public/apps/AlShuwaikhi-Release-v1.0.0.apk
+          echo "APK size: $(wc -c < public/apps/AlShuwaikhi-Release-v1.0.0.apk) bytes"
+      - name: Add APK to feature branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/apps/AlShuwaikhi-Release-v1.0.0.apk
+          if git diff --cached --quiet; then
+            echo "APK already present; no commit needed"
+          else
+            git commit -m "Add verified official signed Android APK for direct customer download"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
