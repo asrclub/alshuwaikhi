@@ -120,3 +120,22 @@ html[data-theme="emerald"] .btn.gold{background:linear-gradient(125deg,#f0d899,#
 html[data-theme="emerald"] footer{background:radial-gradient(ellipse at 50% 0%,rgba(220,183,107,.1),transparent 65%),#061912}
 html[data-theme="emerald"] .mobile-cart:not([hidden]){background:#dcb76b;color:#153228}
 @media(prefers-reduced-motion:reduce){.theme-picker select{transition:none}}
+
+/* Keep the 15-year anniversary artwork legible on both light themes. */
+html[data-theme="blue"] .hero-photo,
+html[data-theme="red"] .hero-photo{
+  opacity:1;
+  filter:none;
+  background:linear-gradient(90deg,transparent 0%,transparent 45%,var(--theme-hero-end) 95%),url('/assets/anniversary.png') left center/auto 100% no-repeat;
+}
+html[data-theme="blue"] .hero-overlay,
+html[data-theme="red"] .hero-overlay{
+  background:linear-gradient(270deg,var(--theme-hero-end) 0%,rgba(255,255,255,.95) 24%,rgba(255,255,255,.25) 58%,transparent 84%);
+  pointer-events:none;
+}
+@media(max-width:850px){
+  html[data-theme="blue"] .hero-photo,
+  html[data-theme="red"] .hero-photo{background-position:left center;opacity:1}
+  html[data-theme="blue"] .hero-overlay,
+  html[data-theme="red"] .hero-overlay{background:linear-gradient(270deg,var(--theme-hero-end) 0%,rgba(255,255,255,.93) 35%,rgba(255,255,255,.35) 72%,transparent 100%)}
+}
