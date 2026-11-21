@@ -5,6 +5,7 @@ on:
       - build-android-app
     paths:
       - android-release/recipient-cert.pem
+      - .github/workflows/build-android-apk.yml
   workflow_dispatch:
 permissions:
   contents: read
@@ -56,12 +57,13 @@ jobs:
           PASSFILE="$RUNNER_TEMP/Signing-Password.txt"
           KEYSTORE="$RUNNER_TEMP/AlShuwaikhi-Release.p12"
           openssl rand -hex 32 > "$PASSFILE"
+          cp "$PASSFILE" "$RUNNER_TEMP/Key-Password.txt"
           export KEYSTORE_PASS="$(cat "$PASSFILE")"
           keytool -genkeypair -keystore "$KEYSTORE" -storetype PKCS12 -alias alshuwaikhi -keyalg RSA -keysize 3072 -sigalg SHA256withRSA -validity 10000 -dname 'CN=AlShuwaikhi Android App, O=AlShuwaikhi, C=EG' -storepass:env KEYSTORE_PASS -keypass:env KEYSTORE_PASS -noprompt
           mkdir -p "$GITHUB_WORKSPACE/release-artifacts"
           unsigned="$(cat "$RUNNER_TEMP/shuwaikhi-project-path")/app/build/outputs/apk/release/app-release-unsigned.apk"
           signed="$GITHUB_WORKSPACE/release-artifacts/AlShuwaikhi-Release-v1.0.0.apk"
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$KEYSTORE" --ks-type PKCS12 --ks-key-alias alshuwaikhi --ks-pass file:"$PASSFILE" --key-pass file:"$PASSFILE" --out "$signed" "$unsigned"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$KEYSTORE" --ks-type PKCS12 --ks-key-alias alshuwaikhi --ks-pass file:"$PASSFILE" --key-pass file:"$RUNNER_TEMP/Key-Password.txt" --out "$signed" "$unsigned"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$signed" | tee "$GITHUB_WORKSPACE/release-artifacts/Signature-Verification.txt"
           unzip -t "$signed" >/dev/null
           tar -czf "$RUNNER_TEMP/ReleaseKeyBackup.tar.gz" -C "$RUNNER_TEMP" AlShuwaikhi-Release.p12 Signing-Password.txt
