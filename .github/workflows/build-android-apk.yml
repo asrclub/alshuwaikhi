@@ -37,6 +37,7 @@ jobs:
           mkdir -p "$APP/app/src/main/res/drawable-nodpi"
           cp public/assets/logo.png "$APP/app/src/main/res/drawable-nodpi/app_logo.png"
           sed -i 's/R.drawable.app_icon/R.drawable.app_logo/g' "$APP/app/src/main/java/com/asrclub/alshuwaikhi/MainActivity.kt"
+          sed -i 's/failed = false; error.visibility = View.GONE; showProgress()/failed = false; this@MainActivity.error.visibility = View.GONE; showProgress()/' "$APP/app/src/main/java/com/asrclub/alshuwaikhi/MainActivity.kt"
           sed -i 's|@drawable/app_icon|@drawable/app_logo|g' "$APP/app/src/main/AndroidManifest.xml" "$APP/app/src/main/res/values-v31/styles.xml"
           echo "$APP" > "$RUNNER_TEMP/shuwaikhi-project-path"
       - name: Build debug APK
