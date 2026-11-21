@@ -27,8 +27,15 @@ def cairo(sz, weight):
     try:
         # Cairo variable font axes: slnt, wght
         axes = font.get_variation_axes()
-        values = [0 if axis["name"] == "Slant" else weight
-                  for axis in axes]
+        values = []
+        for axis in axes:
+            axis_name = axis["name"]
+            if isinstance(axis_name, bytes):
+                axis_name = axis_name.decode("utf-8", "replace")
+            if "slant" in axis_name.lower():
+                values.append(0)
+            else:
+                values.append(max(axis["minimum"], min(weight, axis["maximum"])))
         font.set_variation_by_axes(values)
     except Exception:
         pass
