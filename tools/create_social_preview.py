@@ -1,85 +1,116 @@
 #!/usr/bin/env python3
-"""Generate a Facebook/WhatsApp 1200x630 preview for AlShuwaikhi from existing brand assets."""
+"""Generate a polished, centered social card with genuine Cairo Arabic typography.
+
+Use local original AlShuwaikhi logo (never an invented replacement).
+Social-image text is kept within a central safe area so Facebook square crops
+do not cut off the identity or call to action.
+"""
 from pathlib import Path
-from PIL import Image, ImageOps, ImageDraw, ImageFont, ImageFilter, features
-import math
+from PIL import Image, ImageDraw, ImageFont, ImageOps, features
+import math, os
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "public" / "assets"
-OUT = ASSETS / "social-preview.jpg"
+OUT = ASSETS / "social-preview-v2.jpg"
 SIZE = (1200, 630)
-GOLD = (214, 174, 104)
-CREAM = (247, 236, 218)
-MUTED = (207, 192, 167)
-DARK = (17, 15, 13)
+CENTER = 600
+GOLD = (224, 184, 108)
+DARK_GOLD = (113, 73, 36)
+CREAM = (255, 248, 232)
+MUTED = (238, 224, 198)
+BURGUNDY = (72, 8, 10)
+FONT = os.getenv("CAIRO_FONT", "/tmp/Cairo.ttf")
 
-def font(size, bold=False):
-    paths = [
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
-    ]
-    for path in paths:
-        if Path(path).exists():
-            return ImageFont.truetype(path, size)
-    return ImageFont.load_default()
+
+def cairo(sz, weight):
+    font = ImageFont.truetype(FONT, sz, layout_engine=ImageFont.Layout.RAQM)
+    try:
+        # Cairo variable font axes: slnt, wght
+        axes = font.get_variation_axes()
+        values = []
+        for axis in axes:
+            axis_name = axis["name"]
+            if isinstance(axis_name, bytes):
+                axis_name = axis_name.decode("utf-8", "replace")
+            if "slant" in axis_name.lower():
+                values.append(0)
+            else:
+                values.append(max(axis["minimum"], min(weight, axis["maximum"])))
+        font.set_variation_by_axes(values)
+    except Exception:
+        pass
+    return font
+
 
 def main():
-    base = Image.new("RGB", SIZE, DARK)
-    p = base.load()
-    # Subtle radial lighting within the branded dark background.
-    for y in range(SIZE[1]):
-        for x in range(SIZE[0]):
-            glow = max(0, 1 - math.hypot((x - 775) / 700, (y - 260) / 600))
-            v = int(glow * 25)
-            p[x, y] = (17 + v, 15 + int(v * .78), 13 + int(v * .40))
-    d = ImageDraw.Draw(base)
-    d.rounded_rectangle((15, 15, 1185, 615), 24, outline=(107, 82, 47), width=2)
+    if not features.check("raqm"):
+        raise RuntimeError("Pillow built without Raqm; Arabic RTL is required.")
+    if not Path(FONT).exists():
+        raise RuntimeError("Cairo font not found; refusing to use substitute.")
+    w, h = SIZE
+    canvas = Image.new("RGB", SIZE)
+    px = canvas.load()
+    for y in range(h):
+        for x in range(w):
+            # Concentric amber glows fading into understated dark burgundy.
+            cx = (x-CENTER) / 580
+            cy = (y-250) / 520
+            glow = max(0.0, 1 - math.hypot(cx,cy))
+            edge = abs(x-CENTER)/CENTER
+            px[x,y] = (
+                int(17 + 27*glow + 7*edge),
+                int(9 + 11*glow),
+                int(11 + 4*glow)
+            )
+    d = ImageDraw.Draw(canvas)
+    # Framing details outside safe text area.
+    d.rounded_rectangle((15,15,1185,615),radius=27,outline=(111,74,39),width=2)
+    d.rounded_rectangle((29,29,1171,601),radius=23,outline=(55,37,23),width=2)
+    for side in [114,1086]:
+        d.ellipse((side-66, 266, side+66,398), outline=(107,70,36),width=3)
+        d.ellipse((side-47, 285, side+47,379), outline=(81,54,34),width=2)
+        d.line((side,216,side,248),fill=GOLD,width=2)
+        d.line((side,413,side,454),fill=GOLD,width=2)
 
-    # Preserve the original portrait artwork fully enough to remain recognizable.
-    source = Image.open(ASSETS / "anniversary.png").convert("RGB")
-    px, py, pw, ph = 720, 30, 440, 570
-    art = ImageOps.fit(source, (pw, ph), method=Image.Resampling.LANCZOS, centering=(.5, .5))
-    mask = Image.new("L", (pw, ph), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, pw - 1, ph - 1), radius=22, fill=255)
-    base.paste(art, (px, py), mask)
-    d = ImageDraw.Draw(base)
-    d.rounded_rectangle((px, py, px + pw, py + ph), radius=22, outline=GOLD, width=3)
+    # The real original logo. No clipped vertical promotional artwork.
+    logo=Image.open(ASSETS/"logo.png").convert("RGB")
+    logo=ImageOps.fit(logo,(145,145),method=Image.Resampling.LANCZOS)
+    mask=Image.new("L",logo.size,0)
+    ImageDraw.Draw(mask).ellipse((0,0,144,144),fill=255)
+    d.ellipse((CENTER-80,48,CENTER+80,208),fill=(20,14,12),outline=GOLD,width=4)
+    canvas.paste(logo,(CENTER-72,56),mask)
 
-    logo = Image.open(ASSETS / "logo.png").convert("RGB")
-    logo = ImageOps.fit(logo, (107, 107), method=Image.Resampling.LANCZOS)
-    circ = Image.new("L", logo.size, 0)
-    ImageDraw.Draw(circ).ellipse((1, 1, 106, 106), fill=255)
-    base.paste(logo, (77, 62), circ)
-    d = ImageDraw.Draw(base)
-    d.ellipse((76, 61, 185, 170), outline=GOLD, width=3)
-    d.line((76, 192, 662, 192), fill=(115, 90, 54), width=2)
+    def center_text(text,y,max_width,size,weight,color,stroke=0):
+        f=cairo(size,weight)
+        while True:
+            b=d.textbbox((0,0),text,font=f,direction="rtl")
+            measured=b[2]-b[0]
+            if measured <= max_width or size <= 12:
+                break
+            size-=2
+            f=cairo(size,weight)
+        # anchor mm centers the text and compensates for Arabic ascenders.
+        d.text((CENTER,y),text,font=f,fill=color,anchor="mm",
+               direction="rtl",stroke_width=stroke,stroke_fill=(35,15,11))
+        return measured
 
-    def right(text, y, size, color, bold=False, x=663):
-        f = font(size, bold)
-        kwargs = {"font": f, "fill": color}
-        if features.check("raqm"):
-            kwargs["direction"] = "rtl"
-        bb = d.textbbox((0, 0), text, **{k:v for k,v in kwargs.items() if k not in ("fill",)})
-        width = bb[2] - bb[0]
-        d.text((x - width, y), text, **kwargs)
+    center_text("مطعم وجزارة",239,560,41,700,CREAM)
+    center_text("الشويخي",330,740,106,900,GOLD,stroke=1)
+    d.line((335,407,865,407),fill=(108,79,43),width=2)
+    center_text("مشويات على الفحم",447,710,32,800,CREAM)
+    center_text("ولحوم بلدي طازجة",491,710,29,600,MUTED)
 
-    right("مطعم وجزارة", 220, 31, MUTED, True)
-    right("الشويخي", 276, 84, GOLD, True)
-    right("مشويات على الفحم", 414, 28, CREAM, True)
-    right("ولحوم بلدي طازجة", 462, 25, MUTED)
+    # CTA entirely inside square-crop safe area; no tiny or mangled lettering.
+    left,right,top,bottom=328,872,529,586
+    d.rounded_rectangle((left,top,right,bottom),radius=27,fill=BURGUNDY,outline=GOLD,width=3)
+    center_text("تصفح المنيو واطلب الآن",559,right-left-35,28,800,CREAM)
 
-    d.rounded_rectangle((79, 534, 665, 590), radius=22, fill=GOLD)
-    f = font(21, True)
-    label = "تصفح المنيو واطلب عبر واتساب"
-    bb = d.textbbox((0, 0), label, font=f, direction="rtl" if features.check("raqm") else None)
-    width = bb[2] - bb[0]
-    d.text((372 - width / 2, 547), label, fill=(27, 20, 13), font=f, direction="rtl" if features.check("raqm") else None)
+    canvas.save(OUT,"JPEG",quality=91,optimize=True,subsampling=0)
+    with Image.open(OUT) as check:
+        assert check.size == SIZE
+        assert check.format == "JPEG"
+    print(f"Wrote {OUT}, {OUT.stat().st_size} bytes, {SIZE[0]}x{SIZE[1]}")
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    base.save(OUT, "JPEG", quality=86, optimize=True, progressive=True, subsampling=0)
-    with Image.open(OUT) as result:
-        assert result.size == SIZE and result.format == "JPEG"
-        print(f"Social preview: {OUT} size={result.size} bytes={OUT.stat().st_size}")
 
 if __name__ == "__main__":
     main()
