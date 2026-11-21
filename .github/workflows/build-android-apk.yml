@@ -1,18 +1,18 @@
-name: Build AlShuwaikhi Android APK
+name: Build signed AlShuwaikhi release APK
 on:
   push:
     branches:
       - build-android-app
     paths:
-      - android-project.tar.xz.b64
+      - android-release/recipient-cert.pem
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout website for original branding
+      - name: Checkout project
         uses: actions/checkout@v4
       - name: Configure Java
         uses: actions/setup-java@v4
@@ -27,7 +27,7 @@ jobs:
         run: |
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
-      - name: Prepare Android project and original icon
+      - name: Prepare Android source and original logo
         shell: bash
         run: |
           set -euo pipefail
@@ -39,18 +39,38 @@ jobs:
           sed -i 's/R.drawable.app_icon/R.drawable.app_logo/g' "$APP/app/src/main/java/com/asrclub/alshuwaikhi/MainActivity.kt"
           sed -i 's/failed = false; error.visibility = View.GONE; showProgress()/failed = false; this@MainActivity.error.visibility = View.GONE; showProgress()/' "$APP/app/src/main/java/com/asrclub/alshuwaikhi/MainActivity.kt"
           sed -i 's|@drawable/app_icon|@drawable/app_logo|g' "$APP/app/src/main/AndroidManifest.xml" "$APP/app/src/main/res/values-v31/styles.xml"
+          sed -i 's/versionCode = 1/versionCode = 2/' "$APP/app/build.gradle.kts"
           echo "$APP" > "$RUNNER_TEMP/shuwaikhi-project-path"
-      - name: Build debug APK
+      - name: Compile release APK
         shell: bash
         run: |
           set -euo pipefail
           cd "$(cat "$RUNNER_TEMP/shuwaikhi-project-path")"
-          gradle --no-daemon --stacktrace assembleDebug
-          mkdir -p "$GITHUB_WORKSPACE/android-apk"
-          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/android-apk/AlShuwaikhi.apk"
-      - name: Upload installer
+          gradle --no-daemon --stacktrace assembleRelease
+          test -s app/build/outputs/apk/release/app-release-unsigned.apk
+      - name: Create private release key and sign APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          PASSFILE="$RUNNER_TEMP/Signing-Password.txt"
+          KEYSTORE="$RUNNER_TEMP/AlShuwaikhi-Release.p12"
+          openssl rand -hex 32 > "$PASSFILE"
+          export KEYSTORE_PASS="$(cat "$PASSFILE")"
+          keytool -genkeypair -keystore "$KEYSTORE" -storetype PKCS12 -alias alshuwaikhi -keyalg RSA -keysize 3072 -sigalg SHA256withRSA -validity 10000 -dname 'CN=AlShuwaikhi Android App, O=AlShuwaikhi, C=EG' -storepass:env KEYSTORE_PASS -keypass:env KEYSTORE_PASS -noprompt
+          mkdir -p "$GITHUB_WORKSPACE/release-artifacts"
+          unsigned="$(cat "$RUNNER_TEMP/shuwaikhi-project-path")/app/build/outputs/apk/release/app-release-unsigned.apk"
+          signed="$GITHUB_WORKSPACE/release-artifacts/AlShuwaikhi-Release-v1.0.0.apk"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign --ks "$KEYSTORE" --ks-type PKCS12 --ks-key-alias alshuwaikhi --ks-pass file:"$PASSFILE" --key-pass file:"$PASSFILE" --out "$signed" "$unsigned"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$signed" | tee "$GITHUB_WORKSPACE/release-artifacts/Signature-Verification.txt"
+          unzip -t "$signed" >/dev/null
+          tar -czf "$RUNNER_TEMP/ReleaseKeyBackup.tar.gz" -C "$RUNNER_TEMP" AlShuwaikhi-Release.p12 Signing-Password.txt
+          openssl cms -encrypt -binary -aes256 -in "$RUNNER_TEMP/ReleaseKeyBackup.tar.gz" -outform DER -out "$GITHUB_WORKSPACE/release-artifacts/Encrypted-Release-KeyBackup.p7m" android-release/recipient-cert.pem
+          echo "Release signed, verified and keystore backup encrypted."
+      - name: Upload signed app and encrypted key backup
         uses: actions/upload-artifact@v4
         with:
-          name: AlShuwaikhi-APK
-          path: android-apk/AlShuwaikhi.apk
+          name: AlShuwaikhi-Signed-Release
+          path: release-artifacts/
           if-no-files-found: error
+          retention-days: 7
