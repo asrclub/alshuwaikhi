@@ -4,6 +4,7 @@ on:
     branches: [fix/facebook-preview]
     paths:
       - tools/create_social_preview.py
+      - .github/workflows/generate-og-image.yml
   workflow_dispatch:
 permissions:
   contents: write
