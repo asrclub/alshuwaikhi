@@ -43,4 +43,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/assets/social-preview-v2.jpg
           git commit -m "Add 1200x630 typography-correct OG image with original brand logo" || exit 0
+          git fetch origin fix/facebook-preview-cairo-type
+          git rebase origin/fix/facebook-preview-cairo-type
           git push origin HEAD:fix/facebook-preview-cairo-type
